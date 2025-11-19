@@ -1,0 +1,40 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_PASSWORD: strapi
+      POSTGRES_USER: strapi
+      POSTGRES_DB: strapi
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  strapi:
+    build: ./backend
+    env_file:
+    - ./backend/.env
+    depends_on:
+      - postgres
+    ports:
+      - "1337:1337"
+    volumes:
+      - ./seed-data.tar.gz:/app/seed-data.tar.gz
+
+  nextjs:
+    build:
+      context: ./frontend
+    environment:
+      NEXT_PUBLIC_STRAPI_API_URL: http://strapi:1337
+      NEXT_PUBLIC_STRAPI_API_TOKEN: 473c533174314bc02db55fb921ee47020cc0e305068ea703fed205d7412e19b58be1a95f20c0f553f4f3a41f099c6e489167badaaad0b048a1b5a70a45579656f9518fcad3a9a428e163b99f6eccd116e45704d8c4d1f802ffed5b40f6927d62c3b7337baff8211ed5a1ff7396e98d53858bf2280d241be07e40b0560af7a329
+      NEXT_PUBLIC_STRAPI_FORM_SUBMISSION_TOKEN: ef03398079b700a134fe5cd3cf719ad4f72aefdcd039bd0f84ae5de9e89419697df1470a40faab0908a17dde39bd322c6599c32cb39e0a9cf73f0bb08940f112501d83f8b60cf888d7996550207a9d086512c6f6544dafbf75455dd90997206b5812a40d445519d8c6fc8679966a23e129aa1a965504028f52da1ca80a30d527
+    depends_on:
+      - strapi
+    ports:
+      - "3000:3000"
+
+volumes:
+  pgdata:
+

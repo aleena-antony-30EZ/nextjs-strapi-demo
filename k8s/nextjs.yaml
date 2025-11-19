@@ -1,0 +1,56 @@
+# k8s/nextjs.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nextjs
+  namespace: my-blog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nextjs
+  template:
+    metadata:
+      labels:
+        app: nextjs
+    spec:
+      containers:
+        - name: nextjs
+          image: aleena8/nextjs:latest
+          ports:
+            - containerPort: 3000
+          env:
+            # Strapi API URL
+            - name: NEXT_PUBLIC_STRAPI_API_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: nextjs-config
+                  key: NEXT_PUBLIC_STRAPI_API_URL
+            # Strapi API token (for fetching content)
+            - name: NEXT_PUBLIC_STRAPI_API_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: strapi-token
+                  key: NEXT_PUBLIC_STRAPI_API_TOKEN
+            # Strapi form submission token (optional if used in frontend)
+            - name: NEXT_PUBLIC_STRAPI_FORM_SUBMISSION_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: strapi-token
+                  key: NEXT_PUBLIC_STRAPI_FORM_SUBMISSION_TOKEN
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nextjs
+  namespace: my-blog
+spec:
+  type: NodePort
+  ports:
+  - port: 3000
+    targetPort: 3000
+    nodePort: 30001
+  selector:
+    app: nextjs
+

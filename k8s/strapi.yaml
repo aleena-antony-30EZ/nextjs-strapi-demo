@@ -1,0 +1,62 @@
+# k8s/strapi.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: strapi
+  namespace: my-blog
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: strapi
+  template:
+    metadata:
+      labels:
+        app: strapi
+    spec:
+      containers:
+      - name: strapi
+        image: aleena8/strapi:latest
+        ports:
+        - containerPort: 1337
+        env:
+        - name: DATABASE_CLIENT
+          value: postgres
+        - name: DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              name: blog-secrets
+              key: POSTGRES_DB
+        - name: DATABASE_HOST
+          value: postgres
+        - name: DATABASE_PORT
+          value: "5432"
+        - name: DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: blog-secrets
+              key: POSTGRES_USER
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: blog-secrets
+              key: POSTGRES_PASSWORD
+        - name: STRAPI_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              name: blog-secrets
+              key: STRAPI_API_TOKEN
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: strapi
+  namespace: my-blog
+spec:
+  type: ClusterIP
+  ports:
+  - port: 1337
+    targetPort: 1337
+  selector:
+    app: strapi
+

@@ -1,11 +1,10 @@
 name: Deploy to K3s
 
-# Trigger the workflow on push to main branch
 on:
   push:
     branches:
       - main
-    # Optional: only run if frontend/backend/k8s files change
+    # Optional: uncomment to trigger workflow only if certain folders change
     # paths:
     #   - 'frontend/**'
     #   - 'backend/**'
@@ -15,8 +14,14 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      DOCKER_USER: ${{ secrets.DOCKER_USER }}
+      DOCKER_PASS: ${{ secrets.DOCKER_PASS }}
+      SERVER_IP: ${{ secrets.SERVER_IP }}
+      SERVER_SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+
     steps:
-    # Step 1: Checkout the repository
+    # Step 1: Checkout repository
     - name: Checkout repository
       uses: actions/checkout@v3
 
@@ -31,17 +36,17 @@ jobs:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASS }}
 
-    # Step 4: Build & push Backend Docker image (Strapi)
+    # Step 4: Build & Push Backend (Strapi)
     - name: Build & Push Backend
       run: |
-        docker build -t ${DOCKER_USER}/strapi:latest backend/
-        docker push ${DOCKER_USER}/strapi:latest
+        docker build -t $DOCKER_USER/strapi:latest backend/
+        docker push $DOCKER_USER/strapi:latest
 
-    # Step 5: Build & push Frontend Docker image (Next.js)
+    # Step 5: Build & Push Frontend (Next.js)
     - name: Build & Push Frontend
       run: |
-        docker build -t ${DOCKER_USER}/nextjs:latest frontend/
-        docker push ${DOCKER_USER}/nextjs:latest
+        docker build -t $DOCKER_USER/nextjs:latest frontend/
+        docker push $DOCKER_USER/nextjs:latest
 
     # Step 6: SSH into server and deploy Kubernetes manifests
     - name: Deploy to K3s via SSH
@@ -52,8 +57,8 @@ jobs:
         key: ${{ secrets.SERVER_SSH_KEY }}
         script: |
           echo "Pulling latest Docker images..."
-          docker pull ${DOCKER_USER}/strapi:latest
-          docker pull ${DOCKER_USER}/nextjs:latest
+          docker pull $DOCKER_USER/strapi:latest
+          docker pull $DOCKER_USER/nextjs:latest
           
           echo "Applying Kubernetes manifests..."
           kubectl apply -f ~/nextjs-corporate-starter/k8s/

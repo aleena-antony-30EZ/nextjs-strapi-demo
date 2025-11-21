@@ -1,3 +1,6 @@
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 import type { Metadata } from "next";
 import "../globals.css";
 import { getStrapiMedia, getStrapiURL } from "./utils/api-helpers";
@@ -103,5 +106,5 @@ export default async function RootLayout({
 }
 
 export async function generateStaticParams() {
-  return i18n.locales.map((locale) => ({ lang: locale }));
+  return [];
 }

@@ -20,7 +20,11 @@ RUN yarn install
 
 COPY . .
 
-RUN yarn build
+# Disable static generation to prevent fetch calls during build
+ENV SKIP_BUILD_STATIC_GENERATION=true
+
+RUN SKIP_BUILD_STATIC_GENERATION=true yarn build
+
 
 EXPOSE 3000
 CMD ["yarn", "start"]

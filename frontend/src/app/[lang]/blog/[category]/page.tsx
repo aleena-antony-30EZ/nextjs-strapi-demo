@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 import PageHeader from '@/app/[lang]/components/PageHeader';
 import { fetchAPI } from '@/app/[lang]/utils/fetch-api';
 import BlogList from '@/app/[lang]/views/blog-list';

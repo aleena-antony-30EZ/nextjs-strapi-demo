@@ -7,11 +7,14 @@ export async function fetchAPI(
   options = {}
 ) {
   try {
+    const token = process.env.NEXT_PUBLIC_STRAPI_API_TOKEN;
+
     // Merge default and user options
     const mergedOptions = {
       next: { revalidate: 60 },
       headers: {
         "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,   // ✅ ADD TOKEN HERE
       },
       ...options,
     };
@@ -24,11 +27,20 @@ export async function fetchAPI(
 
     // Trigger API call
     const response = await fetch(requestUrl, mergedOptions);
+
+    if (!response.ok) {
+      console.error("❌ fetchAPI error:", response.status, response.statusText);
+      throw new Error(`Fetch API error: ${response.statusText}`);
+    }
+
     const data = await response.json();
     return data;
-    
+
   } catch (error) {
-    console.error(error);
-    throw new Error(`Please check if your server is running and you set all the required tokens.`);
+    console.error("❌ fetchAPI fatal error:", error);
+    throw new Error(
+      `Please check if your Strapi server is running and tokens are correct.`
+    );
   }
 }
+

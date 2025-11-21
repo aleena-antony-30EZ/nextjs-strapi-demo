@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 import ArticleSelect from "@/app/[lang]/components/ArticleSelect";
 import { fetchAPI } from "@/app/[lang]/utils/fetch-api";
 
@@ -89,25 +91,6 @@ export default async function LayoutRoute({
 }
 
 export async function generateStaticParams() {
-  const token = process.env.NEXT_PUBLIC_STRAPI_API_TOKEN;
-  const path = `/articles`;
-  const options = { headers: { Authorization: `Bearer ${token}` } };
-  const articleResponse = await fetchAPI(
-    path,
-    {
-      populate: ["category"],
-    },
-    options
-  );
-
-  return articleResponse.data.map(
-    (article: {
-      attributes: {
-        slug: string;
-        category: {
-          slug: string;
-        };
-      };
-    }) => ({ slug: article.attributes.slug, category: article.attributes.slug })
-  );
+  return [];
 }
+

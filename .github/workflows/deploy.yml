@@ -1,80 +1,83 @@
-name: CI/CD Pipeline
+name: Deploy Next.js & Strapi to K3s
 
 on:
   push:
-    branches:
-      - main
-
-env:
-  VERSION: v1.${{ github.run_number }}
-  DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
-  DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
+    branches: [ "main" ]
 
 jobs:
-  build:
+  deploy:
+    name: Build & Deploy
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Code
+      # STEP 1 — Checkout source
+      - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
+      # STEP 2 — Login to Docker Hub
       - name: Login to Docker Hub
         uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
-          password: ${{ secrets.DOCKER_TOKEN }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Build & Push Strapi Image (Versioned)
+      # ------------------------------------------
+      # BUILD NEXTJS
+      # ------------------------------------------
+      - name: Build Next.js (Versioned & Latest)
         run: |
-          docker build -t $DOCKER_USER/strapi:${VERSION} backend/
-          docker push $DOCKER_USER/strapi:${VERSION}
+          VERSION=v1.0.${{ github.run_number }}
 
-      - name: Build & Push Next.js Image (Versioned)
+          docker build \
+            -t aleena8/nextjs:${VERSION} \
+            -t aleena8/nextjs:latest \
+            ./frontend
+
+      - name: Push Next.js Images
         run: |
-          docker build -t $DOCKER_USER/nextjs:${VERSION} frontend/
-          docker push $DOCKER_USER/nextjs:${VERSION}
+          VERSION=v1.0.${{ github.run_number }}
+          docker push aleena8/nextjs:${VERSION}
+          docker push aleena8/nextjs:latest
 
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
+      # ------------------------------------------
+      # BUILD STRAPI
+      # ------------------------------------------
+      - name: Build Strapi (Versioned & Latest)
+        run: |
+          VERSION=v1.0.${{ github.run_number }}
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+          docker build \
+            -t aleena8/strapi:${VERSION} \
+            -t aleena8/strapi:latest \
+            ./backend
 
-      - name: Copy K8s Files to Server
-        uses: appleboy/scp-action@v0.1.7
+      - name: Push Strapi Images
+        run: |
+          VERSION=v1.0.${{ github.run_number }}
+          docker push aleena8/strapi:${VERSION}
+          docker push aleena8/strapi:latest
+
+      # ------------------------------------------
+      # SETUP KUBECTL
+      # ------------------------------------------
+      - name: Setup kubectl
+        uses: azure/k8s-set-context@v3
         with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          source: "k8s/*.yaml"
-          target: "/home/deploy/nextjs-corporate-starter/k8s/"
-          strip_components: 0
+          method: kubeconfig
+          kubeconfig: ${{ secrets.KUBECONFIG }}
 
-      - name: Apply Kubernetes Deployment with New Version
-        uses: appleboy/ssh-action@v0.1.7
-        with:
-          host: ${{ secrets.SERVER_IP }}
-          username: ${{ secrets.SERVER_USER }}
-          key: ${{ secrets.SERVER_SSH_KEY }}
-          script: |
-            export KUBECONFIG=/home/deploy/k3s.yaml
-            cd ~/nextjs-corporate-starter/k8s
+      # ------------------------------------------
+      # DEPLOY USING VERSION TAG
+      # ------------------------------------------
+      - name: Update Kubernetes Deployment
+        run: |
+          VERSION=v1.0.${{ github.run_number }}
 
-            echo "Updating Backend Image..."
-            kubectl set image deployment/strapi-api strapi-api=$DOCKER_USER/strapi:${VERSION} -n my-blog
+          kubectl set image deployment/nextjs nextjs=aleena8/nextjs:${VERSION} -n my-blog
+          kubectl set image deployment/strapi-api strapi-api=aleena8/strapi:${VERSION} -n my-blog
 
-            echo "Updating Frontend Image..."
-            kubectl set image deployment/nextjs nextjs=$DOCKER_USER/nextjs:${VERSION} -n my-blog
-
-            echo "Applying K8s manifests..."
-            kubectl apply -f .
-
-            echo "Waiting for rollout..."
-            kubectl rollout status deployment/strapi-api -n my-blog --timeout=120s
-            kubectl rollout status deployment/nextjs -n my-blog --timeout=120s
-
+      - name: Rollout Status
+        run: |
+          kubectl rollout status deployment/nextjs -n my-blog
+          kubectl rollout status deployment/strapi-api -n my-blog
+  

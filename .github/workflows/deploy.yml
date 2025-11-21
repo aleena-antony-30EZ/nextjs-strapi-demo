@@ -27,13 +27,11 @@ jobs:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      # ---------------- Backend Build ----------------
       - name: Build & Push Strapi Image (Versioned)
         run: |
           docker build -t $DOCKER_USER/strapi:${VERSION} backend/
           docker push $DOCKER_USER/strapi:${VERSION}
 
-      # ---------------- Frontend Build ----------------
       - name: Build & Push Next.js Image (Versioned)
         run: |
           docker build -t $DOCKER_USER/nextjs:${VERSION} frontend/
@@ -64,19 +62,19 @@ jobs:
           username: ${{ secrets.SERVER_USER }}
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
-  export KUBECONFIG=/home/deploy/k3s.yaml
-  cd ~/nextjs-corporate-starter/k8s
+            export KUBECONFIG=/home/deploy/k3s.yaml
+            cd ~/nextjs-corporate-starter/k8s
 
-  echo "Updating Backend Image..."
-  kubectl set image deployment/strapi-api strapi-api=$DOCKER_USER/strapi:${VERSION} -n my-blog
+            echo "Updating Backend Image..."
+            kubectl set image deployment/strapi-api strapi-api=$DOCKER_USER/strapi:${VERSION} -n my-blog
 
-  echo "Updating Frontend Image..."
-  kubectl set image deployment/nextjs nextjs=$DOCKER_USER/nextjs:${VERSION} -n my-blog
+            echo "Updating Frontend Image..."
+            kubectl set image deployment/nextjs nextjs=$DOCKER_USER/nextjs:${VERSION} -n my-blog
 
-  echo "Applying K8s manifests..."
-  kubectl apply -f .
+            echo "Applying K8s manifests..."
+            kubectl apply -f .
 
-  echo "Waiting for rollout..."
-  kubectl rollout status deployment/strapi-api -n my-blog --timeout=120s
-  kubectl rollout status deployment/nextjs -n my-blog --timeout=120s
+            echo "Waiting for rollout..."
+            kubectl rollout status deployment/strapi-api -n my-blog --timeout=120s
+            kubectl rollout status deployment/nextjs -n my-blog --timeout=120s
 

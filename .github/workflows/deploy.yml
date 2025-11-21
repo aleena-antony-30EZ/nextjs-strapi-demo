@@ -2,31 +2,42 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main
+
+env:
+  VERSION: v1.${{ github.run_number }}
+  DOCKER_USER: ${{ secrets.DOCKER_USERNAME }}
+  DOCKER_TOKEN: ${{ secrets.DOCKER_TOKEN }}
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Login to Docker
-        uses: docker/login-action@v3
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_TOKEN }}
 
-      - name: Build & Push NextJS Image
+      # ---------------- Backend Build ----------------
+      - name: Build & Push Strapi Image (Versioned)
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/nextjs:latest frontend/
-          docker push ${{ secrets.DOCKER_USERNAME }}/nextjs:latest
+          docker build -t $DOCKER_USER/strapi:${VERSION} backend/
+          docker push $DOCKER_USER/strapi:${VERSION}
 
-      - name: Build & Push Strapi Image
+      # ---------------- Frontend Build ----------------
+      - name: Build & Push Next.js Image (Versioned)
         run: |
-          docker build -t ${{ secrets.DOCKER_USERNAME }}/strapi:latest backend/
-          docker push ${{ secrets.DOCKER_USERNAME }}/strapi:latest
+          docker build -t $DOCKER_USER/nextjs:${VERSION} frontend/
+          docker push $DOCKER_USER/nextjs:${VERSION}
 
   deploy:
     needs: build
@@ -36,7 +47,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v3
 
-      - name: Copy files to server
+      - name: Copy K8s Files to Server
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_IP }}
@@ -46,7 +57,7 @@ jobs:
           target: "/home/deploy/nextjs-corporate-starter/k8s/"
           strip_components: 0
 
-      - name: Apply K8s Manifests
+      - name: Apply Kubernetes Deployment with New Version
         uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.SERVER_IP }}
@@ -54,7 +65,18 @@ jobs:
           key: ${{ secrets.SERVER_SSH_KEY }}
           script: |
             cd ~/nextjs-corporate-starter/k8s
-            sudo kubectl apply -f .
-            sudo kubectl rollout restart deployment nextjs -n my-blog
-            sudo kubectl rollout restart deployment strapi-api -n my-blog
+
+            echo "Updating Backend Image..."
+            kubectl set image deployment/strapi-api strapi-api=$DOCKER_USER/strapi:${VERSION} -n my-blog
+
+            echo "Updating Frontend Image..."
+            kubectl set image deployment/nextjs nextjs=$DOCKER_USER/nextjs:${VERSION} -n my-blog
+
+            echo "Applying K8s manifests..."
+            kubectl apply -f .
+
+            echo "Waiting for rollout..."
+            kubectl rollout status deployment/strapi-api -n my-blog --timeout=120s
+            kubectl rollout status deployment/nextjs -n my-blog --timeout=120s
+
 

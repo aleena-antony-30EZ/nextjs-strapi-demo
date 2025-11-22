@@ -74,7 +74,7 @@ jobs:
           VERSION=v1.0.${{ github.run_number }}
 
           kubectl set image deployment/nextjs nextjs=aleena8/nextjs:${VERSION} -n my-blog
-          kubectl set image deployment/strapi-api strapi-api=aleena8/strapi:${VERSION} -n my-blog
+          kubectl set image deployment/strapi-api strapi=aleena8/strapi:${VERSION} -n my-blog
 
       - name: Rollout Status
         run: |

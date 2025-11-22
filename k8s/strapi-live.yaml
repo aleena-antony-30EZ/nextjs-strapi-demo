@@ -1,0 +1,218 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/restartedAt: "2025-11-22T07:08:14Z"
+    creationTimestamp: "2025-11-22T07:08:14Z"
+    generateName: strapi-api-5d7fc6c547-
+    generation: 1
+    labels:
+      app: strapi
+      pod-template-hash: 5d7fc6c547
+    name: strapi-api-5d7fc6c547-lm6mb
+    namespace: my-blog
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: strapi-api-5d7fc6c547
+      uid: 0bae68ca-b842-423a-8d69-f1debf63940e
+    resourceVersion: "815133"
+    uid: e088473f-a7de-4bbe-b405-dd6f30a2b7d3
+  spec:
+    containers:
+    - env:
+      - name: DATABASE_CLIENT
+        value: postgres
+      - name: DATABASE_HOST
+        value: postgres
+      - name: DATABASE_PORT
+        value: "5432"
+      - name: DATABASE_NAME
+        valueFrom:
+          secretKeyRef:
+            key: POSTGRES_DB
+            name: blog-secrets
+      - name: DATABASE_USERNAME
+        valueFrom:
+          secretKeyRef:
+            key: POSTGRES_USER
+            name: blog-secrets
+      - name: DATABASE_PASSWORD
+        valueFrom:
+          secretKeyRef:
+            key: POSTGRES_PASSWORD
+            name: blog-secrets
+      - name: APP_KEYS
+        valueFrom:
+          secretKeyRef:
+            key: APP_KEYS
+            name: blog-secrets
+      - name: API_TOKEN_SALT
+        valueFrom:
+          secretKeyRef:
+            key: API_TOKEN_SALT
+            name: blog-secrets
+      - name: ADMIN_JWT_SECRET
+        valueFrom:
+          secretKeyRef:
+            key: ADMIN_JWT_SECRET
+            name: blog-secrets
+      - name: JWT_SECRET
+        valueFrom:
+          secretKeyRef:
+            key: JWT_SECRET
+            name: blog-secrets
+      - name: TRANSFER_TOKEN_SALT
+        valueFrom:
+          secretKeyRef:
+            key: TRANSFER_TOKEN_SALT
+            name: blog-secrets
+      - name: STRAPI_API_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: STRAPI_API_TOKEN
+            name: blog-secrets
+      image: aleena8/strapi:latest
+      imagePullPolicy: Always
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /_health
+          port: 1337
+          scheme: HTTP
+        initialDelaySeconds: 20
+        periodSeconds: 15
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: strapi
+      ports:
+      - containerPort: 1337
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /_health
+          port: 1337
+          scheme: HTTP
+        initialDelaySeconds: 10
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-pscsz
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: ni-poc-srv-01
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: kube-api-access-pscsz
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2025-11-22T07:08:18Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2025-11-22T07:08:14Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2025-11-22T07:08:30Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2025-11-22T07:08:30Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2025-11-22T07:08:14Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://b2fa4897b88635c34fcbeb0a40026973607716fafefff3cf3d3f981356ec9717
+      image: docker.io/aleena8/strapi:latest
+      imageID: docker.io/aleena8/strapi@sha256:190d23a84171f9ad51d8c0b5ab9e74df880b289637b7f738e5067f9bd33feb02
+      lastState: {}
+      name: strapi
+      ready: true
+      resources: {}
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2025-11-22T07:08:17Z"
+      user:
+        linux:
+          gid: 0
+          supplementalGroups:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 6
+          - 10
+          - 11
+          - 20
+          - 26
+          - 27
+          uid: 0
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-pscsz
+        readOnly: true
+        recursiveReadOnly: Disabled
+    hostIP: 209.38.121.93
+    hostIPs:
+    - ip: 209.38.121.93
+    phase: Running
+    podIP: 10.42.1.222
+    podIPs:
+    - ip: 10.42.1.222
+    qosClass: BestEffort
+    startTime: "2025-11-22T07:08:14Z"
+kind: List
+metadata:
+  resourceVersion: ""

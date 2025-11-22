@@ -1,0 +1,181 @@
+apiVersion: v1
+items:
+- apiVersion: v1
+  kind: Pod
+  metadata:
+    annotations:
+      kubectl.kubernetes.io/restartedAt: "2025-11-22T07:08:21Z"
+    creationTimestamp: "2025-11-22T07:08:21Z"
+    generateName: nextjs-77cb7c9b99-
+    generation: 1
+    labels:
+      app: nextjs
+      pod-template-hash: 77cb7c9b99
+    name: nextjs-77cb7c9b99-g6vxn
+    namespace: my-blog
+    ownerReferences:
+    - apiVersion: apps/v1
+      blockOwnerDeletion: true
+      controller: true
+      kind: ReplicaSet
+      name: nextjs-77cb7c9b99
+      uid: d69408e2-dddf-48f7-b561-ae4c6f54c0a1
+    resourceVersion: "815155"
+    uid: 1c438038-6274-4d72-bfdd-6ff39cf612e1
+  spec:
+    containers:
+    - env:
+      - name: STRAPI_API_URL
+        value: http://strapi-api:1337
+      - name: NEXT_PUBLIC_STRAPI_API_URL
+        value: http://209.38.121.93:30002
+      - name: NEXT_PUBLIC_STRAPI_API_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: STRAPI_API_TOKEN
+            name: blog-secrets
+      - name: NEXT_PUBLIC_STRAPI_FORM_SUBMISSION_TOKEN
+        valueFrom:
+          secretKeyRef:
+            key: STRAPI_FORM_SUBMISSION_TOKEN
+            name: blog-secrets
+      image: aleena8/nextjs:v3
+      imagePullPolicy: Always
+      livenessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /
+          port: 3000
+          scheme: HTTP
+        initialDelaySeconds: 15
+        periodSeconds: 20
+        successThreshold: 1
+        timeoutSeconds: 1
+      name: nextjs
+      ports:
+      - containerPort: 3000
+        protocol: TCP
+      readinessProbe:
+        failureThreshold: 3
+        httpGet:
+          path: /
+          port: 3000
+          scheme: HTTP
+        initialDelaySeconds: 5
+        periodSeconds: 10
+        successThreshold: 1
+        timeoutSeconds: 1
+      resources: {}
+      terminationMessagePath: /dev/termination-log
+      terminationMessagePolicy: File
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-ssqww
+        readOnly: true
+    dnsPolicy: ClusterFirst
+    enableServiceLinks: true
+    nodeName: ni-poc-srv-01
+    preemptionPolicy: PreemptLowerPriority
+    priority: 0
+    restartPolicy: Always
+    schedulerName: default-scheduler
+    securityContext: {}
+    serviceAccount: default
+    serviceAccountName: default
+    terminationGracePeriodSeconds: 30
+    tolerations:
+    - effect: NoExecute
+      key: node.kubernetes.io/not-ready
+      operator: Exists
+      tolerationSeconds: 300
+    - effect: NoExecute
+      key: node.kubernetes.io/unreachable
+      operator: Exists
+      tolerationSeconds: 300
+    volumes:
+    - name: kube-api-access-ssqww
+      projected:
+        defaultMode: 420
+        sources:
+        - serviceAccountToken:
+            expirationSeconds: 3607
+            path: token
+        - configMap:
+            items:
+            - key: ca.crt
+              path: ca.crt
+            name: kube-root-ca.crt
+        - downwardAPI:
+            items:
+            - fieldRef:
+                apiVersion: v1
+                fieldPath: metadata.namespace
+              path: namespace
+  status:
+    conditions:
+    - lastProbeTime: null
+      lastTransitionTime: "2025-11-22T07:08:25Z"
+      status: "True"
+      type: PodReadyToStartContainers
+    - lastProbeTime: null
+      lastTransitionTime: "2025-11-22T07:08:21Z"
+      status: "True"
+      type: Initialized
+    - lastProbeTime: null
+      lastTransitionTime: "2025-11-22T07:08:38Z"
+      status: "True"
+      type: Ready
+    - lastProbeTime: null
+      lastTransitionTime: "2025-11-22T07:08:38Z"
+      status: "True"
+      type: ContainersReady
+    - lastProbeTime: null
+      lastTransitionTime: "2025-11-22T07:08:21Z"
+      status: "True"
+      type: PodScheduled
+    containerStatuses:
+    - containerID: containerd://4bae5bd1788d0dd864b02b5d00ff82fa583fdb867bfa5a74e2d2a1c79e95774d
+      image: docker.io/aleena8/nextjs:v3
+      imageID: docker.io/aleena8/nextjs@sha256:7851316e63221729a11b6d4150a445ef44eb5606ff133d15184f97bfd7ef885d
+      lastState: {}
+      name: nextjs
+      ready: true
+      resources: {}
+      restartCount: 0
+      started: true
+      state:
+        running:
+          startedAt: "2025-11-22T07:08:24Z"
+      user:
+        linux:
+          gid: 0
+          supplementalGroups:
+          - 0
+          - 1
+          - 2
+          - 3
+          - 4
+          - 6
+          - 10
+          - 11
+          - 20
+          - 26
+          - 27
+          uid: 0
+      volumeMounts:
+      - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+        name: kube-api-access-ssqww
+        readOnly: true
+        recursiveReadOnly: Disabled
+    hostIP: 209.38.121.93
+    hostIPs:
+    - ip: 209.38.121.93
+    phase: Running
+    podIP: 10.42.1.223
+    podIPs:
+    - ip: 10.42.1.223
+    qosClass: BestEffort
+    startTime: "2025-11-22T07:08:21Z"
+kind: List
+metadata:
+  resourceVersion: ""

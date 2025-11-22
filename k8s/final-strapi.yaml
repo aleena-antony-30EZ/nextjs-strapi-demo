@@ -1,0 +1,137 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    deployment.kubernetes.io/revision: "20"
+  creationTimestamp: "2025-11-20T18:49:12Z"
+  generation: 20
+  name: strapi-api
+  namespace: my-blog
+  resourceVersion: "816595"
+  uid: 988d6abe-d668-4045-97af-b2f48726395d
+spec:
+  progressDeadlineSeconds: 600
+  replicas: 1
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      app: strapi
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/restartedAt: "2025-11-22T07:50:02Z"
+      creationTimestamp: null
+      labels:
+        app: strapi
+    spec:
+      containers:
+      - env:
+        - name: DATABASE_CLIENT
+          value: postgres
+        - name: DATABASE_HOST
+          value: postgres
+        - name: DATABASE_PORT
+          value: "5432"
+        - name: DATABASE_NAME
+          valueFrom:
+            secretKeyRef:
+              key: POSTGRES_DB
+              name: blog-secrets
+        - name: DATABASE_USERNAME
+          valueFrom:
+            secretKeyRef:
+              key: POSTGRES_USER
+              name: blog-secrets
+        - name: DATABASE_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: POSTGRES_PASSWORD
+              name: blog-secrets
+        - name: APP_KEYS
+          valueFrom:
+            secretKeyRef:
+              key: APP_KEYS
+              name: blog-secrets
+        - name: API_TOKEN_SALT
+          valueFrom:
+            secretKeyRef:
+              key: API_TOKEN_SALT
+              name: blog-secrets
+        - name: ADMIN_JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: ADMIN_JWT_SECRET
+              name: blog-secrets
+        - name: JWT_SECRET
+          valueFrom:
+            secretKeyRef:
+              key: JWT_SECRET
+              name: blog-secrets
+        - name: TRANSFER_TOKEN_SALT
+          valueFrom:
+            secretKeyRef:
+              key: TRANSFER_TOKEN_SALT
+              name: blog-secrets
+        - name: STRAPI_API_TOKEN
+          valueFrom:
+            secretKeyRef:
+              key: STRAPI_API_TOKEN
+              name: blog-secrets
+        image: aleena8/strapi:latest
+        imagePullPolicy: Always
+        livenessProbe:
+          failureThreshold: 5
+          httpGet:
+            path: /
+            port: 1337
+            scheme: HTTP
+          initialDelaySeconds: 20
+          periodSeconds: 15
+          successThreshold: 1
+          timeoutSeconds: 3
+        name: strapi
+        ports:
+        - containerPort: 1337
+          protocol: TCP
+        readinessProbe:
+          failureThreshold: 3
+          httpGet:
+            path: /
+            port: 1337
+            scheme: HTTP
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          successThreshold: 1
+          timeoutSeconds: 3
+        resources: {}
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      schedulerName: default-scheduler
+      securityContext: {}
+      terminationGracePeriodSeconds: 30
+status:
+  availableReplicas: 1
+  conditions:
+  - lastTransitionTime: "2025-11-20T18:49:12Z"
+    lastUpdateTime: "2025-11-22T07:50:17Z"
+    message: ReplicaSet "strapi-api-5574494cf" has successfully progressed.
+    reason: NewReplicaSetAvailable
+    status: "True"
+    type: Progressing
+  - lastTransitionTime: "2025-11-22T07:52:21Z"
+    lastUpdateTime: "2025-11-22T07:52:21Z"
+    message: Deployment has minimum availability.
+    reason: MinimumReplicasAvailable
+    status: "True"
+    type: Available
+  observedGeneration: 20
+  readyReplicas: 1
+  replicas: 1
+  updatedReplicas: 1

@@ -15,26 +15,24 @@ spec:
     spec:
       containers:
         - name: nextjs
-          image: aleena8/nextjs:v3
-          imagePullPolicy: Always
+          image: aleena8/nextjs:latest
           ports:
             - containerPort: 3000
           env:
-            - name: STRAPI_API_URL
-              value: "http://strapi-api:1337"
             - name: NEXT_PUBLIC_STRAPI_API_URL
               value: "http://209.38.121.93:30002"
+
             - name: NEXT_PUBLIC_STRAPI_API_TOKEN
               valueFrom:
                 secretKeyRef:
-                  key: STRAPI_API_TOKEN
                   name: blog-secrets
+                  key: STRAPI_API_TOKEN
+
             - name: NEXT_PUBLIC_STRAPI_FORM_SUBMISSION_TOKEN
               valueFrom:
                 secretKeyRef:
-                  key: STRAPI_FORM_SUBMISSION_TOKEN
                   name: blog-secrets
-
+                  key: STRAPI_FORM_SUBMISSION_TOKEN
 
 ---
 apiVersion: v1

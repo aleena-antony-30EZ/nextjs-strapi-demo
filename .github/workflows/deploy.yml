@@ -65,6 +65,13 @@ jobs:
         with:
           method: kubeconfig
           kubeconfig: ${{ secrets.KUBECONFIG }}
+            # ------------------------------------------
+      # APPLY KUBERNETES YAML CONFIGS
+      # ------------------------------------------
+      - name: Apply K8s manifests
+        run: |
+          kubectl apply -f k8s/ -n my-blog
+
 
       # ------------------------------------------
       # DEPLOY USING VERSION TAG
